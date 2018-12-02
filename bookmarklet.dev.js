@@ -36,7 +36,6 @@ if(newJQ){
 }
 
 })
-
 (function($){
 
 var style ='<style type="text/css" id="cutsom_style_wxyz">';
@@ -47,23 +46,24 @@ style+='</style>';
 
 var lang=detectLang();
 var strings={
-	"en":{"btnAll":"Kudos for all","btnActivity":"Kudos only for activities","btnPost":"Kudos only for posts","btnClose":"CLOSE"},
-	"ja":{"btnAll":"全てにスゴイする","btnActivity":"アクティビティのみにスゴイする","btnPost":"投稿のみにスゴイする","btnClose":"閉じる"},
-	"ru":{"btnAll":"Престижность для всех","btnActivity":"Престижность только для занятий","btnPost":"Престижность только для должности","btnClose":"ЗАКРЫТЬ"},
-	"zh":{"btnAll":"感谢大家","btnActivity":"荣誉只为活动","btnPost":"荣誉仅限于帖子","btnClose":"关"},
+	"en":{"btnAll":"Kudos for all","btnActivity":"Kudos only for activities","btnPost":"Kudos only for posts","btnClose":"CLOSE","chkScroll":"Auto scroll"},
+	"ja":{"btnAll":"全てにスゴイする","btnActivity":"アクティビティのみにスゴイする","btnPost":"投稿のみにスゴイする","btnClose":"閉じる","chkScroll":"自動スクロール"},
+	"ru":{"btnAll":"Престижность для всех","btnActivity":"Престижность только для занятий","btnPost":"Престижность только для должности","btnClose":"ЗАКРЫТЬ","chkScroll":"Автопрокрутка"},
+	"zh":{"btnAll":"感谢大家","btnActivity":"荣誉只为活动","btnPost":"荣誉仅限于帖子","btnClose":"关","chkScroll":"自动滚屏"},
 };
 
 if($('#cutsom_style_wxyz').length>0){$('#cutsom_style_wxyz').remove()}
 $('head').append(style);
 
 $(document).on('click','.btn_wxyz',function(){
-	var mode = $(this).attr('data-mode');
-	if(mode=='all'){
-		$('.feed-entry.activity,.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
-	}else if(mode=='activity'){
-		$('.feed-entry.activity').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
-	}else if(mode=='post'){
-		$('.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+	var mode=$(this).attr('data-mode');
+	var autoScroll=$('#chk_wxyz_auto').prop('checked');
+	if((mode=='all')||(mode=='activity')||(mode=='post')){
+		if(autoScroll){
+			funcAutoScroll(mode);
+		}else{
+			mainFunc(mode);
+		}
 	}else if(mode=='close'){
 		$('#btn_outer_wxyz').fadeOut(function(){
 			$(this).remove();
@@ -73,7 +73,66 @@ $(document).on('click','.btn_wxyz',function(){
 	}
 });
 
+function mainFunc(mode){
+	if(mode=='all'){
+		$('.feed-entry.activity,.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+	}else if(mode=='activity'){
+		$('.feed-entry.activity').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+	}else if(mode=='post'){
+		$('.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+	}	
+}
+
+var scrollDetection={detecting:false,pos:0,mode:''};
+
+$(window).on('scroll',function(){
+	if(scrollDetection.detecting){
+		if(($('html').scrollTop()+window.innerHeight)>=(scrollDetection.pos-20)){
+			scrollDetection.detecting=false;
+			detectLoaded({count:0,loop:true,mode:scrollDetection.mode});
+		}
+	}
+});
+
+function funcAutoScroll(mode){
+	scrollDetection.detecting=true;
+	scrollDetection.pos=$(document).height();
+	scrollDetection.mode=mode;
+	$('html').animate({scrollTop:scrollDetection.pos},'fast');
+}
+
+function detectLoaded(io){
+	if(io.loop){
+		io.count++;
+		setTimeout(function(){
+			io.loop=$('.load-feed').eq(0).hasClass('loading-more');
+			detectLoaded(io);
+		},250);
+	}else{
+		afterLoaded(io);
+	}
+}
+
+function afterLoaded(io){
+	var alreadyPushed=0;
+	if(io.mode=='all'){
+		alreadyPushed=$('.feed-entry.activity,.feed-entry.post').find('.media-actions').find('button.js-view-kudos').length;
+	}else if(io.mode=='activity'){
+		alreadyPushed=$('.feed-entry.activity').find('.media-actions').find('button.js-view-kudos').length;
+	}else if(io.mode=='post'){
+		alreadyPushed=$('.feed-entry.post').find('.media-actions').find('button.js-view-kudos').length;
+	}	
+	if(alreadyPushed>0){
+		$('html').animate({scrollTop:0},'fast',function(){
+			mainFunc(io.mode);
+		});
+	}else{
+		funcAutoScroll(io.mode)
+	}
+}
+
 var btnSrc='';
+btnSrc+='&nbsp;<label><input id="chk_wxyz_auto" type="checkbox" name="chk_wxyz" checked>&nbsp;'+strings[lang].chkScroll+'</label>&nbsp;';
 btnSrc+='<button class="btn_wxyz" data-mode="all">'+strings[lang].btnAll+'</button>';
 btnSrc+='<button class="btn_wxyz" data-mode="activity">'+strings[lang].btnActivity+'</button>';
 btnSrc+='<button class="btn_wxyz" data-mode="post">'+strings[lang].btnPost+'</button>';
