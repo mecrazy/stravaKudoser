@@ -75,9 +75,9 @@ $(document).on('click','.btn_wxyz',function(){
 
 function mainFunc(mode){
 	if(mode=='all'){
-		$('.feed-entry.activity,.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+		$('.feed-entry.activity,.feed-entry.group-activity,.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
 	}else if(mode=='activity'){
-		$('.feed-entry.activity').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
+		$('.feed-entry.activity,.feed-entry.group-activity').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
 	}else if(mode=='post'){
 		$('.feed-entry.post').find('button.js-add-kudo').each(function(){$(this).trigger('click')});
 	}	
