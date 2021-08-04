@@ -115,7 +115,9 @@ function detectLoaded(io){
 	if(io.loop){
 		io.count++;
 		setTimeout(function(){
-			io.loop=$('.load-feed').eq(0).hasClass('loading-more');
+			io.loop=($('.load-feed').filter(function(){
+				return this.element.style['display'] == 'none';
+			}).length == 0);
 			detectLoaded(io);
 		},250);
 	}else{
