@@ -51,7 +51,7 @@ var strings={
 	"ru":{"btnAll":"Престижность для всех","btnActivity":"Престижность только для занятий","btnPost":"Престижность только для должности","btnClose":"ЗАКРЫТЬ","chkScroll":"Автопрокрутка"},
 	"zh":{"btnAll":"感谢大家","btnActivity":"荣誉只为活动","btnPost":"荣誉仅限于帖子","btnClose":"关","chkScroll":"自动滚屏"},
 };
-
+var container={"all":0,"last":0};
 if($('#cutsom_style_wxyz').length>0){$('#cutsom_style_wxyz').remove()}
 $('head').append(style);
 
@@ -124,19 +124,30 @@ function detectLoaded(io){
 }
 
 function afterLoaded(io){
+	container.all=$(".react-card-container ").length;
 	var alreadyPushed=0;
 	if(io.mode=='all'){
-		alreadyPushed=$('.feed-entry.activity,.feed-entry.post').find('.media-actions').find('button.js-view-kudos').length;
+		alreadyPushed=$(".react-card-container > div[data-react-class='Activity'],.react-card-container > div[data-react-class='Post']").find("button[data-testid='kudos_button']").
+		filter(function(){
+			return $(this).find('svg').attr('data-testid') == 'filled_kudos';
+		}).length;
 	}else if(io.mode=='activity'){
-		alreadyPushed=$('.feed-entry.activity').find('.media-actions').find('button.js-view-kudos').length;
+		alreadyPushed=$(".react-card-container > div[data-react-class='Activity']").find("button[data-testid='kudos_button']").
+		filter(function(){
+			return $(this).find('svg').attr('data-testid') == 'filled_kudos';
+		}).length;
 	}else if(io.mode=='post'){
-		alreadyPushed=$('.feed-entry.post').find('.media-actions').find('button.js-view-kudos').length;
+		alreadyPushed=$(".react-card-container > div[data-react-class='Post']").find("button[data-testid='kudos_button']").
+		filter(function(){
+			return $(this).find('svg').attr('data-testid') == 'filled_kudos';
+		}).length;
 	}	
-	if(alreadyPushed>0){
+	if((alreadyPushed>0)||(container.last== container.all)){
 		$('html').animate({scrollTop:0},'fast',function(){
 			mainFunc(io.mode);
 		});
 	}else{
+		container.last=container.all;
 		funcAutoScroll(io.mode)
 	}
 }
